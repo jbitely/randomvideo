@@ -1,16 +1,22 @@
-var playSound = function(genre) {
-    SC.get('/tracks', {
-        genres: genre, 		//passing user's genre param 
-        bpm: {
-            from: 100 		//searching tracks only higher than 100bpm for test
-        }
+var playSound = function(trackTitle) {
+    SC.get('/tracks',
+    {
+        q: trackTitle, 		//q is a search param that will search all fields with trackTitle
+    }
+
+    , function(tracks) {
+    	console.log(tracks)
+        //var ranNum = Math.floor(Math.random() * 9); 		//generate random number 1-50 (0 based index)
+        SC.oEmbed(tracks[0].uri, { 
+        	auto_play: true,
+      		maxheight: 130,
+      		iframe: true,	//ensures the html5 player and not flash player
+      		
+
+        	
 
 
-        //tracks returns as an array - default 50 items
-        //pass tracks into function and randomly selecting one of the 50
-    }, function(tracks) {
-        var ranNum = Math.floor(Math.random() * 9); 		//generate random number 1-50 (0 based index)
-        SC.oEmbed(tracks[ranNum].uri, { auto_play: true }, document.getElementById('target')); 	//placing the widget in our target div?
+         }, document.getElementById('target')); 	//placing the widget in our target div
     	
     });
 }
@@ -20,6 +26,8 @@ window.onload = function() {
         client_id: 'c25c8b434c58d7431980c06ffde425f0'
     });
 
+    playSound('californication')
+
 
 // there is an error in the looping logic below
     var menuLinks = document.getElementsByClassName('genre'); 	//grabbing links with genre class
@@ -28,9 +36,12 @@ window.onload = function() {
         menuLink.onclick = function(e) {
         	e.preventDefault();  		//need this not sure why 
         	playSound(menuLink.innerHTML); 		//invoke our function and pass it the innerHTML of DOM element, (the text in the links)
+       
         }
     }
 };
+
+
 
 
 /////////Sample code to embed Soundcloud User    WORKS
