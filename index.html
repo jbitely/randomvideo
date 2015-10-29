@@ -4,110 +4,121 @@
 <head>
     <meta charset="UTF-8">
     <title>Smoke&Arrow</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script src="http://connect.soundcloud.com/sdk.js"></script>
 </head>
 
 <body>
     <h1>Arrow&Smoke</h1>
-    <form id="searchForm">
-        Artist:
-        <input id="artist" type="text" /> Title:
-        <input id="title" type="text" />
+    <form id="searchForm" onsubmit="makeVideo()">
+        Search:
+        <br>
+        Artist: <input id="artist" type="text" name="artist">
+        Title: <input id="title" type="text" name="title">
+        <input type="submit" id="submit">
+        </button>
     </form>
-    <button id="btn">search</button>
     <span id="giphyme"></span>
     <span id="searchWord"></span>
     <div id='target'>target</div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script>
-    var songTitle = "beat it";
-    var songArtist = "michael jackson";
-    var fullSearch = songArtist + " " + songTitle;
-    var fullLyrics = "";
-    var lyricsArray = [];
+    // window.onload = function() {
 
-    window.onload = function() {
+    // };
+    var makeVideo = function() {
+
+        var songTitle = $('#title').val();
+        var songArtist = $('#artist').val();
+        var fullSearch = songArtist + " " + songTitle;
+        var fullLyrics = "";
+        var lyricsArray = [];
+
+        var playSound = function(trackTitle) {
+            SC.get('/tracks', {
+                    q: trackTitle, //q is a search param that will search all fields with trackTitle
+                },
+                function(tracks) {
+                    console.log(tracks)
+                        //var ranNum = Math.floor(Math.random() * 9);     //generate random number 1-50 (0 based index)
+                    SC.oEmbed(tracks[0].uri, {
+                        auto_play: true,
+                        maxheight: 130,
+                        iframe: true, //ensures the html5 player and not flash player
+                    }, document.getElementById('target')); //placing the widget in our target div
+                });
+        };
+
+        $.ajax({
+            method: "GET",
+            dataType: "jsonp",
+            url: "http://api.musixmatch.com/ws/1.1/matcher.lyrics.get?apikey=4f5c184fb5ac5258f07c13f656f07208&format=jsonp&",
+            data: "q_track=" + songTitle + "&q_artist=" + songArtist,
+            success: function(json) {
+                fullLyrics = json.message.body.lyrics.lyrics_body;
+                lyricsArray = fullLyrics.split("\n");
+
+                var lyricsHandler = {
+                    currentWord: fullSearch,
+                    line: 0,
+                    reset: function() {
+                        this.currentWord = fullSearch;
+                        this.line = 0;
+                        //used when a new song is playing to reset  the object back to stock
+                    }
+                };
+                var lyricsSetter = function(obj) {
+                    var currentLine = lyricsArray[obj.line].split(' '); //["hello,", "it's", "me"]
+                    // console.log(currentLine);
+                    obj.currentWord = currentLine[Math.floor(Math.random() * currentLine.length)] + " " + currentLine[Math.floor(Math.random() * currentLine.length)]; //randomly select a word from currentLine
+                    // console.log(obj.currentWord)
+                    if (obj.line === lyricsArray.length - 2) { // if the last line is accessed, restart
+                        obj.line = 0;
+                    }
+                    obj.line++;
+                    // console.log(lyricsHandler);
+                };
+                var picLoader = function() {
+                    document.getElementById("searchWord").innerHTML = lyricsHandler.currentWord;
+                    request = new XMLHttpRequest;
+                    request.open('GET', 'http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=' + lyricsHandler.currentWord, true);
+                    //console.log(lyricsHandler.currentWord);
+                    request.onload = function() {
+                        // console.log('test');
+                        if (request.status >= 200 && request.status < 400) {
+                            data = JSON.parse(request.responseText).data.image_url;
+                            if (data != undefined) {
+                                console.log(data);
+                                document.getElementById("giphyme").innerHTML = '<center><img src = "' + data + '"  title="GIF via Giphy"></center>';
+                            }
+                        } else {
+                            console.log('reached giphy, but API returned an error');
+                        }
+                    };
+                    request.onerror = function() {
+                        console.log('connection error');
+                    };
+                    request.send();
+                };
+
+                picLoader();
+
+                window.setInterval(function() {
+                    lyricsSetter(lyricsHandler);
+                }, 5000); //+1 so the very first query will always be of the artist
+                window.setInterval(picLoader, 5000);
+            }
+        });
+
         SC.initialize({
             client_id: 'c25c8b434c58d7431980c06ffde425f0'
         });
-    };
+        playSound(fullSearch);
+        console.log(fullSearch);
+    }
 
-    var playSound = function(trackTitle) {
-        SC.get('/tracks', {
-                q: trackTitle, //q is a search param that will search all fields with trackTitle
-            },
-            function(tracks) {
-                console.log(tracks)
-                    //var ranNum = Math.floor(Math.random() * 9); 		//generate random number 1-50 (0 based index)
-                SC.oEmbed(tracks[0].uri, {
-                    auto_play: true,
-                    maxheight: 130,
-                    iframe: true, //ensures the html5 player and not flash player
-                }, document.getElementById('target')); //placing the widget in our target div
-            });
-    };
-
-    $.ajax({
-        method: "GET",
-        dataType: "jsonp",
-        url: "http://api.musixmatch.com/ws/1.1/matcher.lyrics.get?apikey=4f5c184fb5ac5258f07c13f656f07208&format=jsonp&",
-        data: "q_track=" + songTitle + "&q_artist=" + songArtist,
-        success: function(json) {
-            fullLyrics = json.message.body.lyrics.lyrics_body;
-            lyricsArray = fullLyrics.split("\n");
-
-            var lyricsHandler = {
-                currentWord: songArtist,
-                line: 0,
-                reset: function() {
-                    this.currentWord = songArtist;
-                    this.line = 0;
-                    //used when a new song is playing to reset  the object back to stock
-                }
-            };
-            var lyricsSetter = function(obj) {
-                var currentLine = lyricsArray[obj.line].split(' '); //["hello,", "it's", "me"]
-                console.log(currentLine);
-                obj.currentWord = currentLine[Math.floor(Math.random() * currentLine.length)]; //randomly select a word from currentLine
-                console.log(obj.currentWord)
-                if (obj.line === lyricsArray.length - 2) { // if the last line is accessed, restart
-                    obj.line = 0;
-                }
-                obj.line++;
-                console.log(lyricsHandler);
-            };
-            var picLoader = function() {
-                document.getElementById("searchWord").innerHTML = lyricsHandler.currentWord;
-                request = new XMLHttpRequest;
-                request.open('GET', 'http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=' + lyricsHandler.currentWord, true);
-                //console.log(lyricsHandler.currentWord);
-                request.onload = function() {
-                    // console.log('test');
-                    if (request.status >= 200 && request.status < 400) {
-                        data = JSON.parse(request.responseText).data.image_url;
-                        if (data != undefined) {
-                            console.log(data);
-                            document.getElementById("giphyme").innerHTML = '<center><img src = "' + data + '"  title="GIF via Giphy"></center>';
-                        }
-                    } else {
-                        console.log('reached giphy, but API returned an error');
-                    }
-                };
-                request.onerror = function() {
-                    console.log('connection error');
-                };
-                request.send();
-            };
-            window.setInterval(function() {
-                lyricsSetter(lyricsHandler);
-            }, 5001); //+1 so the very first query will always be of the artist
-            window.setInterval(picLoader, 5000);
-        }
+    $("#searchForm").submit(function(e) {
+        e.preventDefault();
     });
-
-
-    console.log(fullSearch);
-    playSound(fullSearch);
     </script>
 </body>
 
