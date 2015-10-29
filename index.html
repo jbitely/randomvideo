@@ -1,25 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<title>Smoke&Arrow</title>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-	<script src="//connect.soundcloud.com/sdk.js"></script>
-	<script type="text/javascript" src="scripts.js"></script>
+    <meta charset="UTF-8">
+    <title>Smoke&Arrow</title>
 </head>
+
 <body>
-	<h1>Arrow&Smoke</h1>
+    <h1>Arrow&Smoke</h1>
+    <form id="searchForm">
+        Artist:
+        <input id="artist" type="text" /> Title:
+        <input id="title" type="text" />
+    </form>
+    <button id="btn">search</button>
+    <ul>
+        <li><a href='#' class='genre'>pop</a></li>
+        <li><a href='#' class='genre'>Genre B</a></li>
+        <li><a href='#' class='genre'>Genre C</a></li>
+        <li><a href='#' class='genre'>Genre D</a></li>
+        <li><a href='#' class='genre'>michael jackson</a></li>
+    </ul>
+    <div id='target'>target</div>
 
-	
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="//connect.soundcloud.com/sdk.js"></script>
+    <script type="text/javascript" src="scripts.js"></script>
 
-	<ul>
-		<li><a href='#' class='genre'>pop</a></li>
-		<li><a href='#' class='genre'>Genre B</a></li>
-		<li><a href='#' class='genre'>Genre C</a></li>
-		<li><a href='#' class='genre'>Genre D</a></li>
-		<li><a href='#' class='genre'>michael jackson</a></li>
-	</ul>
-
-	<div id='target'>target</div>
 </body>
+
 </html>
